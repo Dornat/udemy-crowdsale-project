@@ -1,5 +1,9 @@
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .App-logo {
@@ -19,4 +23,10 @@
 
 .App-link {
   color: #09d3ac;
+}
+
+.kyc-input {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
 }
