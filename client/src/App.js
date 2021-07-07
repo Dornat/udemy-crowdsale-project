@@ -12,6 +12,8 @@ const App = () => {
   const [accounts, setAccounts] = useState([])
 
   const [myToken, setMyToken] = useState(null)
+  const [myTokenContractAddress, setMyTokenContractAddress] = useState('')
+  const [myTokenTotalSupply, setMyTokenTotalSupply] = useState(0)
   const [myTokenSale, setMyTokenSale] = useState(null)
   const [kycHandler, setKycHandler] = useState(null)
   const [tokenSaleContractAddress, setTokenSaleContractAddress] = useState('')
@@ -32,10 +34,12 @@ const App = () => {
 
         const cappu = new w3.eth.Contract(MyToken.abi, MyToken.networks[networkId]?.address)
         setMyToken(cappu)
+        setMyTokenContractAddress(MyToken.networks[networkId]?.address)
         setMyTokenSale(new w3.eth.Contract(MyTokenSale.abi, MyTokenSale.networks[networkId]?.address))
         setKycHandler(new w3.eth.Contract(KYCHandler.abi, KYCHandler.networks[networkId]?.address))
         setTokenSaleContractAddress(MyTokenSale.networks[networkId]?.address)
         setCurrentUserTokenAmount(await cappu.methods.balanceOf(accs[0]).call())
+        setMyTokenTotalSupply(await cappu.methods.totalSupply().call())
       }
 
       setUp().then(() => {
@@ -63,24 +67,11 @@ const App = () => {
     setCurrentUserTokenAmount(await myToken.methods.balanceOf(accounts[0]).call())
   }
 
-  const listenToPaymentEvent = () => {
-    // console.log('LISTENTOPAYMENTEVENT', itemManager)
-    // if (itemManager) {
-    //   itemManager.events.SupplyChainStep().on('data', async (e) => {
-    //     if (e.returnValues._step === '1') {
-    //       let item = await itemManager.methods.items(e.returnValues._itemIndex).call()
-    //       console.log(item)
-    //       alert(`Item ${item._identifier} was paid, deliver it now!`)
-    //     }
-    //     console.log(e)
-    //   })
-    // }
-  }
-
   const listenToTransferCappuTokensEvent = () => {
     if (myToken) {
       myToken.events.Transfer({to: accounts[0]}).on('data', async () => {
         await handleUpdateUserTokens(accounts)
+        setMyTokenTotalSupply(await myToken.methods.totalSupply().call())
       })
     }
   }
@@ -108,6 +99,8 @@ const App = () => {
       {isLoaded && (
         <div className="App">
           <h1>StarDucks Cappuccino Token Sale!</h1>
+          <h1>CAPPU Token total supply: {myTokenTotalSupply}</h1>
+          <h1>CAPPU Address: {myTokenContractAddress}</h1>
           <h2>KYC Whitelisting</h2>
 
           <h2>Add address to whitelist below</h2>
@@ -132,7 +125,7 @@ const App = () => {
             <Button variant="contained" color="primary" onClick={() => handleCheckKycStatus()}>Check</Button>
           </div>
 
-          <h2>If you want to by tokens, send tokens to address below</h2>
+          <h2>If you want to by tokens, send no more than 42 wei to address below</h2>
           <h3>{tokenSaleContractAddress}</h3>
 
           <h2>You currently have {currentUserTokenAmount} CAPPU tokens</h2>
